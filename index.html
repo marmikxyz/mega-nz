@@ -176,6 +176,12 @@
     position: relative;
     overflow:hidden;
   }
+  .thumb img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .thumb .dur{
     position:absolute;
     bottom:4px; right:4px;
@@ -250,22 +256,27 @@
          take your share link:  https://mega.nz/file/XXXXX#YYYYY
          change /file/ to /embed/:  https://mega.nz/embed/XXXXX#YYYYY
      - duration: optional text shown on the thumbnail (e.g. "12:34")
+     - thumbnail: optional image URL for the thumbnail. Leave as "" to show
+                  a default play-icon placeholder instead.
      ========================================================= */
   const videos = [
     {
       title: "Sample Video 1",
       embed: "https://mega.nz/embed/blxDHIIC#xtl6jlJYJXoxunocRyR26GyNcI7iC5rwkqx0sBip_jQ",
-      duration: "10:00"
+      duration: "10:00",
+      thumbnail: "https://i.ibb.co/JFQS7zJ8/x.jpg"
     },
     {
       title: "Sample Video 2",
       embed: "https://mega.nz/embed/AbCdEfGh2#XyZ123keyHere2",
-      duration: "05:24"
+      duration: "05:24",
+      thumbnail: ""
     },
     {
       title: "Sample Video 3",
       embed: "https://mega.nz/embed/AbCdEfGh3#XyZ123keyHere3",
-      duration: "22:11"
+      duration: "22:11",
+      thumbnail: ""
     }
   ];
 
@@ -286,8 +297,11 @@
       const card = document.createElement('div');
       card.className = 'video-card' + (realIndex === activeIndex ? ' active' : '');
       card.onclick = () => playVideo(realIndex);
+      const thumbContent = v.thumbnail
+        ? `<img src="${v.thumbnail}" alt="${v.title}" onerror="this.parentElement.innerHTML='&#9654;'+this.parentElement.innerHTML.match(/<span.*span>/)?.[0];">`
+        : `&#9654;`;
       card.innerHTML = `
-        <div class="thumb">&#9654;<span class="dur">${v.duration || ''}</span></div>
+        <div class="thumb">${thumbContent}<span class="dur">${v.duration || ''}</span></div>
         <div class="card-meta">
           <div class="t">${v.title}</div>
           <div class="s">MVK Player</div>
