@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MVK Player</title>
+<title>Marmik Archive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -37,7 +37,7 @@
     top:0;
     background: rgba(15,17,21,0.92);
     backdrop-filter: blur(8px);
-    z-index: 10;
+    z-index: 20;
   }
   .logo{
     font-family: 'Archivo Black', sans-serif;
@@ -48,6 +48,7 @@
     display:flex;
     align-items:center;
     gap:8px;
+    cursor: pointer;
   }
   .logo span{ color: var(--accent); }
   .logo::before{
@@ -90,20 +91,34 @@
   }
   .search-btn:hover{ background: #ffc65a; }
 
-  /* Layout */
   main{
-    display:flex;
-    gap: 28px;
-    padding: 24px 28px 60px;
     max-width: 1400px;
     margin: 0 auto;
+    padding: 24px 28px 60px;
   }
-  .player-col{ flex: 2; min-width: 0; }
-  .list-col{ flex: 1; min-width: 300px; }
+
+  /* Player overlay (shown when a video is selected) */
+  #playerSection{
+    display: none;
+    margin-bottom: 28px;
+  }
+  #playerSection.visible{ display: block; }
+
+  .back-link{
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .back-link:hover{ color: var(--text); }
 
   .player-frame{
     position: relative;
     width: 100%;
+    max-width: 960px;
     aspect-ratio: 16/9;
     background: #000;
     border-radius: 10px;
@@ -113,69 +128,48 @@
   .player-frame iframe{
     width: 100%; height: 100%; border: none;
   }
-  .player-placeholder{
-    width:100%; height:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    color: var(--muted);
-    text-align:center;
-    padding: 0 20px;
-  }
-  .player-placeholder .glyph{
-    width: 56px; height:56px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-dim);
-    display:flex; align-items:center; justify-content:center;
-    font-size: 22px; color: var(--accent);
-  }
-
   .now-playing-title{
     font-size: 19px;
     font-weight: 800;
     margin: 16px 0 4px;
+    max-width: 960px;
   }
   .now-playing-meta{
     color: var(--muted);
     font-size: 13px;
   }
 
-  /* Video list */
-  .list-title{
+  /* Grid */
+  .grid-title{
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--muted);
-    margin: 4px 0 14px;
+    margin: 4px 0 16px;
+  }
+  .video-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
   }
   .video-card{
-    display:flex;
-    gap: 12px;
-    padding: 8px;
-    border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 6px;
-    border: 1px solid transparent;
-  }
-  .video-card:hover{ background: var(--panel-hover); }
-  .video-card.active{
-    background: var(--panel);
-    border-color: var(--accent-dim);
+    border-radius: 10px;
+    overflow: hidden;
   }
   .thumb{
-    width: 120px;
+    width: 100%;
     aspect-ratio: 16/9;
-    flex-shrink: 0;
-    border-radius: 6px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #232838, #171a21);
     display:flex; align-items:center; justify-content:center;
     color: var(--accent);
-    font-size: 20px;
+    font-size: 28px;
     position: relative;
     overflow:hidden;
+    border: 1px solid var(--line);
   }
+  .video-card:hover .thumb{ border-color: var(--accent-dim); }
   .thumb img{
     width: 100%;
     height: 100%;
@@ -184,17 +178,19 @@
   }
   .thumb .dur{
     position:absolute;
-    bottom:4px; right:4px;
-    background: rgba(0,0,0,0.75);
-    font-size: 10px;
-    padding: 1px 5px;
-    border-radius: 3px;
+    bottom:6px; right:6px;
+    background: rgba(0,0,0,0.8);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
     color: var(--text);
   }
-  .card-meta{ min-width:0; }
+  .card-meta{
+    padding: 10px 2px 0;
+  }
   .card-meta .t{
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -204,26 +200,28 @@
   .card-meta .s{
     font-size: 12px;
     color: var(--muted);
-    margin-top: 4px;
+    margin-top: 3px;
   }
 
   .empty-state{
     color: var(--muted);
     font-size: 14px;
-    padding: 20px 8px;
+    padding: 20px 2px;
+    grid-column: 1 / -1;
   }
 
-  @media (max-width: 880px){
-    main{ flex-direction: column; }
-    header{ gap: 14px; }
+  @media (max-width: 600px){
+    header{ gap: 14px; padding: 12px 16px; }
     .logo{ font-size: 18px; }
+    main{ padding: 18px 16px 50px; }
+    .video-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">MVK <span>Player</span></div>
+  <div class="logo" onclick="goHome()">Marmik <span>Archive</span></div>
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="Search videos...">
     <button class="search-btn" onclick="runSearch()">Search</button>
@@ -231,21 +229,15 @@
 </header>
 
 <main>
-  <div class="player-col">
-    <div class="player-frame" id="playerFrame">
-      <div class="player-placeholder">
-        <div class="glyph">&#9654;</div>
-        <div>Select a video from the list to start playing</div>
-      </div>
-    </div>
+  <div id="playerSection">
+    <div class="back-link" onclick="goHome()">&#8592; Back to all videos</div>
+    <div class="player-frame" id="playerFrame"></div>
     <div class="now-playing-title" id="npTitle"></div>
     <div class="now-playing-meta" id="npMeta"></div>
   </div>
 
-  <div class="list-col">
-    <div class="list-title">Videos</div>
-    <div id="videoList"></div>
-  </div>
+  <div class="grid-title">Videos</div>
+  <div class="video-grid" id="videoGrid"></div>
 </main>
 
 <script>
@@ -267,10 +259,10 @@
       thumbnail: "https://i.ibb.co/JFQS7zJ8/x.jpg"
     },
     {
-      title: "Sample Video 2",
-      embed: "https://mega.nz/embed/AbCdEfGh2#XyZ123keyHere2",
+      title: "Karuppu",
+      embed: "https://mega.nz/embed/P9I1XZRT#XavVPD_b8-j6CvgcId4WLTJjJXxMHtztpSfIoeCbXGA",
       duration: "05:24",
-      thumbnail: ""
+      thumbnail: "https://i.ibb.co/Bxp4nfL/x.jpg"
     },
     {
       title: "Sample Video 3",
@@ -280,44 +272,51 @@
     }
   ];
 
-  const listEl = document.getElementById('videoList');
+  const gridEl = document.getElementById('videoGrid');
+  const playerSection = document.getElementById('playerSection');
   const playerFrame = document.getElementById('playerFrame');
   const npTitle = document.getElementById('npTitle');
   const npMeta = document.getElementById('npMeta');
-  let activeIndex = null;
 
   function render(list){
-    listEl.innerHTML = '';
+    gridEl.innerHTML = '';
     if(list.length === 0){
-      listEl.innerHTML = '<div class="empty-state">No videos match your search.</div>';
+      gridEl.innerHTML = '<div class="empty-state">No videos match your search.</div>';
       return;
     }
     list.forEach((v) => {
       const realIndex = videos.indexOf(v);
       const card = document.createElement('div');
-      card.className = 'video-card' + (realIndex === activeIndex ? ' active' : '');
+      card.className = 'video-card';
       card.onclick = () => playVideo(realIndex);
+
       const thumbContent = v.thumbnail
-        ? `<img src="${v.thumbnail}" alt="${v.title}" onerror="this.parentElement.innerHTML='&#9654;'+this.parentElement.innerHTML.match(/<span.*span>/)?.[0];">`
+        ? `<img src="${v.thumbnail}" alt="${v.title}" onerror="this.outerHTML='&#9654;';">`
         : `&#9654;`;
+
       card.innerHTML = `
         <div class="thumb">${thumbContent}<span class="dur">${v.duration || ''}</span></div>
         <div class="card-meta">
           <div class="t">${v.title}</div>
-          <div class="s">MVK Player</div>
+          <div class="s">Marmik Archive</div>
         </div>
       `;
-      listEl.appendChild(card);
+      gridEl.appendChild(card);
     });
   }
 
   function playVideo(index){
-    activeIndex = index;
     const v = videos[index];
     playerFrame.innerHTML = `<iframe src="${v.embed}" allowfullscreen allow="autoplay"></iframe>`;
     npTitle.textContent = v.title;
     npMeta.textContent = 'Now playing';
-    render(currentFiltered());
+    playerSection.classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goHome(){
+    playerSection.classList.remove('visible');
+    playerFrame.innerHTML = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
