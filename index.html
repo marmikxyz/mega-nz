@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Marmik Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg: #0b0b0d;
@@ -15,6 +15,7 @@
     --text: #ececef;
     --muted: #8a8a92;
     --accent: #ffffff;
+    --orange: #ff7a1a;
   }
   *{ box-sizing: border-box; }
   html,body{ margin:0; padding:0; }
@@ -59,10 +60,11 @@
     flex-shrink: 0;
   }
   .logo{
-    font-size: 19px;
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: 0.3px;
-    color: var(--text);
+    color: var(--orange);
     line-height: 1.1;
   }
   .tagline{
@@ -91,9 +93,9 @@
     outline: none;
   }
   .search-wrap input::placeholder{ color: var(--muted); }
-  .search-wrap input:focus{ border-color: var(--accent); }
+  .search-wrap input:focus{ border-color: var(--orange); }
   .search-btn{
-    background: var(--accent);
+    background: var(--orange);
     border: none;
     border-radius: 0 8px 8px 0;
     padding: 0 18px;
@@ -103,7 +105,7 @@
     font-size: 13px;
     letter-spacing: 0.3px;
   }
-  .search-btn:hover{ background: #d8d8db; }
+  .search-btn:hover{ background: #ff9847; }
 
   main{
     max-width: 1400px;
@@ -256,7 +258,7 @@
 
   @media (max-width: 600px){
     header{ gap: 12px; padding: 12px 16px; }
-    .logo{ font-size: 16px; }
+    .logo{ font-size: 22px; }
     main{ padding: 18px 16px 50px; }
     .video-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
   }
@@ -269,7 +271,6 @@
     <div class="om-avatar">&#3350;</div>
     <div>
       <div class="logo">Marmik Player</div>
-      <div class="tagline">Om</div>
     </div>
   </div>
   <div class="search-wrap">
