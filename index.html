@@ -55,9 +55,14 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size: 20px;
-    color: var(--text);
+    overflow: hidden;
     flex-shrink: 0;
+  }
+  .om-avatar img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .logo{
     font-family: 'Playfair Display', serif;
@@ -136,6 +141,14 @@
     color: #0b0b0d;
     border-color: var(--accent);
   }
+  .tab-new{
+    border-style: dashed;
+    color: var(--orange);
+  }
+  .tab-new:hover{ border-color: var(--orange); color: var(--orange); }
+
+  .playlist-matches{ margin-bottom: 6px; }
+  .playlist-matches .tab{ display: inline-block; margin: 0 8px 8px 0; }
 
   #playerSection{ display: none; margin-bottom: 28px; }
   #playerSection.visible{ display: block; }
@@ -221,6 +234,28 @@
     border-radius: 4px;
     color: #0b0b0d;
   }
+  .add-btn{
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1;
+    display:flex; align-items:center; justify-content:center;
+    cursor: pointer;
+  }
+  .add-btn:hover{ background: var(--orange); border-color: var(--orange); color: #0b0b0d; }
+  .remove-link{
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    margin-top: 4px;
+    display: inline-block;
+  }
+  .remove-link:hover{ color: var(--orange); }
   .card-meta{ padding: 10px 2px 0; }
   .card-meta .t{
     font-size: 14px;
@@ -256,6 +291,82 @@
     letter-spacing: 0.5px;
   }
 
+  /* Add-to-playlist / create-playlist modal */
+  .modal-overlay{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.visible{ display: flex; }
+  .modal-box{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 360px;
+  }
+  .modal-title{
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .modal-playlists{
+    max-height: 240px;
+    overflow-y: auto;
+    margin-bottom: 14px;
+  }
+  .modal-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-row:last-child{ border-bottom: none; }
+  .modal-hint{ color: var(--muted); font-size: 13px; padding: 6px 2px; }
+  .modal-newplaylist{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .modal-newplaylist input{
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .modal-newplaylist input:focus{ border-color: var(--orange); }
+  .modal-newplaylist button{
+    background: var(--orange);
+    border: none;
+    border-radius: 6px;
+    padding: 0 14px;
+    color: #0b0b0d;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .modal-close{
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    padding-top: 4px;
+  }
+  .modal-close:hover{ color: var(--text); }
+
   @media (max-width: 600px){
     header{ gap: 12px; padding: 12px 16px; }
     .logo{ font-size: 22px; }
@@ -268,7 +379,7 @@
 
 <header>
   <div class="brand" onclick="goHome()">
-    <div class="om-avatar">&#3350;</div>
+    <div class="om-avatar"><img src="https://iili.io/C8yaMR1.jpg" alt="Marmik Player"></div>
     <div>
       <div class="logo">Marmik Player</div>
     </div>
@@ -288,11 +399,24 @@
   </div>
 
   <div class="tabs" id="tabs"></div>
+  <div class="playlist-matches" id="playlistMatches"></div>
   <div class="grid-title" id="gridTitle">Videos</div>
   <div class="video-grid" id="videoGrid"></div>
 </main>
 
 <footer>Marmik Player</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Add to Playlist</div>
+    <div class="modal-playlists" id="modalPlaylistList"></div>
+    <div class="modal-newplaylist">
+      <input type="text" id="newPlaylistName" placeholder="New playlist name">
+      <button onclick="createPlaylistFromModal()">Create</button>
+    </div>
+    <div class="modal-close" onclick="closeModal()">Close</div>
+  </div>
+</div>
 
 <script>
   /* =========================================================
@@ -315,11 +439,19 @@
      Note: Mega's player has no start-time support, so "startTime" is
      ignored for type "mega".
 
-     playlists.json entry format:
+     playlists.json entry format (this is only the STARTING seed):
        {
          "name": "My Favorites",
          "videoIds": ["v1", "v3"]   <- must match ids in videos.json, in order
        }
+
+     PLAYLISTS YOU CREATE ON THE SITE:
+     Click "+ New Playlist" (next to the tabs) to name a new playlist, or
+     click the "+" button on any video thumbnail to add it to one (or
+     create one on the spot). These changes are saved in the visitor's
+     own browser (localStorage), not back into playlists.json — so
+     playlists made on the live site are per-browser/per-device, not
+     shared with other visitors or synced back to this file.
 
      IMPORTANT: because this page loads videos.json / playlists.json
      with fetch(), most browsers block that over a plain file:// link.
@@ -331,14 +463,26 @@
   let playlists = [];
   let currentPlaylistIndex = null; // null = "All Videos"
   let lastQuery = '';
+  let pendingVideoId = null; // video the modal is currently acting on, if any
+
+  const STORAGE_KEY = 'marmik_player_playlists_v1';
 
   const gridEl = document.getElementById('videoGrid');
   const gridTitleEl = document.getElementById('gridTitle');
   const tabsEl = document.getElementById('tabs');
+  const playlistMatchesEl = document.getElementById('playlistMatches');
   const playerSection = document.getElementById('playerSection');
   const playerFrame = document.getElementById('playerFrame');
   const npTitle = document.getElementById('npTitle');
   const npMeta = document.getElementById('npMeta');
+
+  function loadPlaylistsFromStorage(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }
+  function savePlaylistsToStorage(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
+  }
 
   async function loadData(){
     try{
@@ -347,7 +491,15 @@
         fetch('playlists.json')
       ]);
       videos = await vRes.json();
-      playlists = await pRes.json();
+      const seedPlaylists = await pRes.json();
+
+      // Playlists you create in the browser are saved to localStorage on
+      // this device/browser. The first time the page loads with nothing
+      // saved yet, it starts from playlists.json as a starting point.
+      const stored = loadPlaylistsFromStorage();
+      playlists = stored !== null ? stored : seedPlaylists;
+      if(stored === null) savePlaylistsToStorage();
+
       renderTabs();
       render(currentList());
     }catch(err){
@@ -375,6 +527,12 @@
       tab.onclick = () => { currentPlaylistIndex = i; renderTabs(); render(currentList()); };
       tabsEl.appendChild(tab);
     });
+
+    const newTab = document.createElement('div');
+    newTab.className = 'tab tab-new';
+    newTab.textContent = '+ New Playlist';
+    newTab.onclick = () => openCreatePlaylistModal();
+    tabsEl.appendChild(newTab);
   }
 
   function currentList(){
@@ -445,19 +603,117 @@
         ? `<img src="${v.thumbnail}" alt="${v.title}" onerror="this.outerHTML='&#9654;';">`
         : `&#9654;`;
 
+      const removeLink = currentPlaylistIndex !== null
+        ? `<div class="remove-link" onclick="event.stopPropagation(); removeFromCurrentPlaylist('${v.id}')">Remove from playlist</div>`
+        : '';
+
       card.innerHTML = `
         <div class="thumb">
           ${thumbContent}
           <span class="src-tag">${v.type}</span>
           <span class="dur">${v.duration || ''}</span>
+          <button class="add-btn" onclick="event.stopPropagation(); openAddToPlaylistModal('${v.id}')" title="Add to playlist">+</button>
         </div>
         <div class="card-meta">
           <div class="t">${v.title}</div>
           <div class="s">Marmik Player</div>
+          ${removeLink}
         </div>
       `;
       gridEl.appendChild(card);
     });
+  }
+
+  function removeFromCurrentPlaylist(videoId){
+    if(currentPlaylistIndex === null) return;
+    const pl = playlists[currentPlaylistIndex];
+    const idx = pl.videoIds.indexOf(videoId);
+    if(idx !== -1){
+      pl.videoIds.splice(idx, 1);
+      savePlaylistsToStorage();
+      render(currentList());
+    }
+  }
+
+  function openAddToPlaylistModal(videoId){
+    pendingVideoId = videoId;
+    document.getElementById('modalTitle').textContent = 'Add to Playlist';
+    renderModalPlaylistList();
+    document.getElementById('modalOverlay').classList.add('visible');
+  }
+
+  function openCreatePlaylistModal(){
+    pendingVideoId = null;
+    document.getElementById('modalTitle').textContent = 'Create New Playlist';
+    renderModalPlaylistList();
+    document.getElementById('modalOverlay').classList.add('visible');
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').classList.remove('visible');
+    document.getElementById('newPlaylistName').value = '';
+    pendingVideoId = null;
+  }
+
+  function renderModalPlaylistList(){
+    const box = document.getElementById('modalPlaylistList');
+    box.innerHTML = '';
+    if(pendingVideoId === null){
+      box.innerHTML = '<div class="modal-hint">Enter a name below to create an empty playlist.</div>';
+      return;
+    }
+    if(playlists.length === 0){
+      box.innerHTML = '<div class="modal-hint">No playlists yet — create one below.</div>';
+      return;
+    }
+    playlists.forEach((pl, i) => {
+      const row = document.createElement('label');
+      row.className = 'modal-row';
+      const checked = pl.videoIds.includes(pendingVideoId);
+      row.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} onchange="togglePlaylistMembership(${i})"> ${pl.name}`;
+      box.appendChild(row);
+    });
+  }
+
+  function togglePlaylistMembership(i){
+    const pl = playlists[i];
+    const idx = pl.videoIds.indexOf(pendingVideoId);
+    if(idx === -1) pl.videoIds.push(pendingVideoId);
+    else pl.videoIds.splice(idx, 1);
+    savePlaylistsToStorage();
+    renderTabs();
+  }
+
+  function createPlaylistFromModal(){
+    const nameInput = document.getElementById('newPlaylistName');
+    const name = nameInput.value.trim();
+    if(!name) return;
+    const newPl = { name, videoIds: pendingVideoId !== null ? [pendingVideoId] : [] };
+    playlists.push(newPl);
+    savePlaylistsToStorage();
+    renderTabs();
+    renderModalPlaylistList();
+    nameInput.value = '';
+  }
+
+  function selectPlaylistFromSearch(i){
+    currentPlaylistIndex = i;
+    lastQuery = '';
+    document.getElementById('searchInput').value = '';
+    renderTabs();
+    render(currentList());
+    updatePlaylistMatches();
+  }
+
+  function updatePlaylistMatches(){
+    if(!lastQuery){ playlistMatchesEl.innerHTML = ''; return; }
+    const matches = playlists.filter(pl => pl.name.toLowerCase().includes(lastQuery));
+    if(matches.length === 0){ playlistMatchesEl.innerHTML = ''; return; }
+    const chips = matches.map((pl) => {
+      const i = playlists.indexOf(pl);
+      return `<div class="tab" onclick="selectPlaylistFromSearch(${i})">${pl.name}</div>`;
+    }).join('');
+    playlistMatchesEl.innerHTML = `<div class="grid-title">Matching Playlists</div>${chips}`;
   }
 
   function playVideo(id){
@@ -480,6 +736,7 @@
   function runSearch(){
     lastQuery = document.getElementById('searchInput').value.trim().toLowerCase();
     render(currentList());
+    updatePlaylistMatches();
   }
   document.getElementById('searchInput').addEventListener('keydown', (e) => {
     if(e.key === 'Enter') runSearch();
@@ -487,6 +744,7 @@
   document.getElementById('searchInput').addEventListener('input', (e) => {
     lastQuery = e.target.value.trim().toLowerCase();
     render(currentList());
+    updatePlaylistMatches();
   });
 
   loadData();
