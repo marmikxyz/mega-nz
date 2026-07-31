@@ -1,0 +1,28 @@
+[
+  {
+    "id": "v1",
+    "title": "Sample Mega Video",
+    "type": "mega",
+    "url": "https://mega.nz/embed/AbCdEfGh#XyZ123keyHere",
+    "duration": "10:00",
+    "thumbnail": ""
+  },
+  {
+    "id": "v2",
+    "title": "Sample YouTube Video",
+    "type": "youtube",
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "startTime": 30,
+    "duration": "05:24",
+    "thumbnail": ""
+  },
+  {
+    "id": "v3",
+    "title": "Sample Dailymotion Video",
+    "type": "dailymotion",
+    "url": "https://www.dailymotion.com/video/x7tgd2v",
+    "startTime": 15,
+    "duration": "22:11",
+    "thumbnail": ""
+  }
+]
