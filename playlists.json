@@ -1,0 +1,10 @@
+[
+  {
+    "name": "My Favorites",
+    "videoIds": ["v2", "v1"]
+  },
+  {
+    "name": "Watch Later",
+    "videoIds": ["v3"]
+  }
+]
