@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Marmik Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #170f0a;
-    --panel: #241811;
-    --panel-hover: #2e1f15;
-    --line: #3a2a1c;
-    --text: #f5ead9;
-    --muted: #b89a7d;
-    --saffron: #ff9933;
-    --saffron-dim: #8a531c;
-    --gold: #e8c37a;
+    --bg: #0b0b0d;
+    --panel: #161619;
+    --panel-hover: #1f1f23;
+    --line: #26262b;
+    --text: #ececef;
+    --muted: #8a8a92;
+    --accent: #ffffff;
   }
   *{ box-sizing: border-box; }
   html,body{ margin:0; padding:0; }
@@ -25,25 +23,8 @@
     color: var(--text);
     font-family: 'Manrope', sans-serif;
     min-height: 100vh;
-    position: relative;
   }
 
-  /* Subtle watermark of Shiva behind everything */
-  body::before{
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url('https://iili.io/C8yaMR1.jpg');
-    background-size: 480px;
-    background-repeat: no-repeat;
-    background-position: center 60px;
-    opacity: 0.05;
-    filter: grayscale(30%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Top bar */
   header{
     display:flex;
     align-items:center;
@@ -52,7 +33,7 @@
     border-bottom: 1px solid var(--line);
     position: sticky;
     top:0;
-    background: rgba(23,15,10,0.92);
+    background: rgba(11,11,13,0.92);
     backdrop-filter: blur(8px);
     z-index: 20;
   }
@@ -64,23 +45,26 @@
     cursor: pointer;
     white-space: nowrap;
   }
-  .shiva-avatar{
+  .om-avatar{
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--saffron);
-    box-shadow: 0 0 12px 2px rgba(255,153,51,0.55), 0 0 24px 4px rgba(255,153,51,0.25);
+    border: 1px solid var(--line);
+    background: var(--panel);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 20px;
+    color: var(--text);
+    flex-shrink: 0;
   }
   .logo{
-    font-family: 'Cinzel', serif;
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     color: var(--text);
     line-height: 1.1;
   }
-  .logo span{ color: var(--saffron); }
   .tagline{
     font-size: 10px;
     color: var(--muted);
@@ -107,38 +91,50 @@
     outline: none;
   }
   .search-wrap input::placeholder{ color: var(--muted); }
-  .search-wrap input:focus{ border-color: var(--saffron); }
+  .search-wrap input:focus{ border-color: var(--accent); }
   .search-btn{
-    background: var(--saffron);
+    background: var(--accent);
     border: none;
     border-radius: 0 8px 8px 0;
     padding: 0 18px;
     cursor: pointer;
-    color: #1a0f08;
+    color: #0b0b0d;
     font-weight: 800;
     font-size: 13px;
     letter-spacing: 0.3px;
   }
-  .search-btn:hover{ background: var(--gold); }
+  .search-btn:hover{ background: #d8d8db; }
 
   main{
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px 28px 60px;
-    position: relative;
-    z-index: 1;
   }
 
-  /* Om divider */
-  .om-divider{
-    text-align: center;
-    color: var(--saffron-dim);
-    font-size: 20px;
-    margin: 0 0 20px;
-    letter-spacing: 10px;
+  /* Playlist tabs */
+  .tabs{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .tab{
+    padding: 7px 16px;
+    border-radius: 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .tab:hover{ background: var(--panel-hover); color: var(--text); }
+  .tab.active{
+    background: var(--accent);
+    color: #0b0b0d;
+    border-color: var(--accent);
   }
 
-  /* Player section */
   #playerSection{ display: none; margin-bottom: 28px; }
   #playerSection.visible{ display: block; }
 
@@ -151,7 +147,7 @@
     gap: 6px;
     margin-bottom: 12px;
   }
-  .back-link:hover{ color: var(--saffron); }
+  .back-link:hover{ color: var(--text); }
 
   .player-frame{
     position: relative;
@@ -161,8 +157,7 @@
     background: #000;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid var(--saffron-dim);
-    box-shadow: 0 0 30px rgba(255,153,51,0.12);
+    border: 1px solid var(--line);
   }
   .player-frame iframe{ width: 100%; height: 100%; border: none; }
 
@@ -171,16 +166,14 @@
     font-weight: 800;
     margin: 16px 0 4px;
     max-width: 960px;
-    font-family: 'Cinzel', serif;
   }
   .now-playing-meta{ color: var(--muted); font-size: 13px; }
 
-  /* Grid */
   .grid-title{
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--saffron-dim);
+    color: var(--muted);
     margin: 4px 0 16px;
     font-weight: 800;
   }
@@ -194,19 +187,16 @@
     width: 100%;
     aspect-ratio: 16/9;
     border-radius: 10px;
-    background: linear-gradient(135deg, #2e1f15, #1a1109);
+    background: var(--panel);
     display:flex; align-items:center; justify-content:center;
-    color: var(--saffron);
-    font-size: 28px;
+    color: var(--muted);
+    font-size: 26px;
     position: relative;
     overflow:hidden;
     border: 1px solid var(--line);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s;
   }
-  .video-card:hover .thumb{
-    border-color: var(--saffron);
-    box-shadow: 0 0 16px rgba(255,153,51,0.25);
-  }
+  .video-card:hover .thumb{ border-color: var(--accent); }
   .thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
   .thumb .dur{
     position:absolute;
@@ -220,14 +210,14 @@
   .thumb .src-tag{
     position:absolute;
     top:6px; left:6px;
-    background: rgba(255,153,51,0.9);
+    background: rgba(255,255,255,0.9);
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     padding: 2px 6px;
     border-radius: 4px;
-    color: #1a0f08;
+    color: #0b0b0d;
   }
   .card-meta{ padding: 10px 2px 0; }
   .card-meta .t{
@@ -248,21 +238,25 @@
     grid-column: 1 / -1;
   }
 
+  .load-error{
+    color: var(--muted);
+    font-size: 13px;
+    padding: 20px 2px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+  }
+
   footer{
     text-align:center;
     padding: 24px;
-    color: var(--saffron-dim);
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 1px;
-    position: relative;
-    z-index: 1;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.5px;
   }
 
   @media (max-width: 600px){
     header{ gap: 12px; padding: 12px 16px; }
-    .logo{ font-size: 17px; }
-    .tagline{ display:none; }
+    .logo{ font-size: 16px; }
     main{ padding: 18px 16px 50px; }
     .video-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
   }
@@ -272,10 +266,10 @@
 
 <header>
   <div class="brand" onclick="goHome()">
-    <img class="shiva-avatar" src="https://iili.io/C8yaMR1.jpg" alt="Shiva">
+    <div class="om-avatar">&#3350;</div>
     <div>
-      <div class="logo">ॐ Marmik <span>Player</span></div>
-      <div class="tagline">Har Har Mahadev</div>
+      <div class="logo">Marmik Player</div>
+      <div class="tagline">Om</div>
     </div>
   </div>
   <div class="search-wrap">
@@ -292,71 +286,111 @@
     <div class="now-playing-meta" id="npMeta"></div>
   </div>
 
-  <div class="om-divider">&#3350;</div>
-  <div class="grid-title">Videos</div>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid-title" id="gridTitle">Videos</div>
   <div class="video-grid" id="videoGrid"></div>
 </main>
 
-<footer>ॐ नमः शिवाय</footer>
+<footer>Marmik Player</footer>
 
 <script>
   /* =========================================================
-     ADD YOUR VIDEOS HERE.
+     Videos live in videos.json, playlists live in playlists.json
+     — both must sit in the SAME FOLDER as this HTML file.
 
-     type: "mega" | "youtube" | "dailymotion"
+     videos.json entry format:
+       {
+         "id": "v1",                 <- unique, used by playlists.json
+         "title": "My Video",
+         "type": "mega" | "youtube" | "dailymotion",
+         "url": "...",                <- see notes below
+         "startTime": 30,             <- optional, seconds (YT/DM only)
+         "duration": "12:34",         <- optional, shown on thumbnail
+         "thumbnail": "https://..."   <- optional image URL
+       }
 
-     For MEGA:
-       url = your embed link (take the share link and change
-             /file/ to /embed/), e.g.
-             https://mega.nz/embed/AbCdEfGh#XyZ123keyHere
-       Note: Mega's embed player does not support a start-time
-       parameter, so "startTime" is ignored for mega videos.
+     For MEGA: url = embed link (share link with /file/ changed to /embed/)
+     For YOUTUBE / DAILYMOTION: any normal link works, ID is auto-extracted.
+     Note: Mega's player has no start-time support, so "startTime" is
+     ignored for type "mega".
 
-     For YOUTUBE:
-       url = any normal link works: watch?v=..., youtu.be/...,
-             or an embed link. The ID is auto-extracted.
+     playlists.json entry format:
+       {
+         "name": "My Favorites",
+         "videoIds": ["v1", "v3"]   <- must match ids in videos.json, in order
+       }
 
-     For DAILYMOTION:
-       url = any normal link works: dailymotion.com/video/...
-             or an embed link. The ID is auto-extracted.
-
-     startTime: optional, number of SECONDS into the video to
-                start playback (YouTube & Dailymotion only).
-
-     thumbnail: optional image URL. Leave "" for a default icon.
-     duration: optional text shown on the thumbnail (e.g. "12:34")
+     IMPORTANT: because this page loads videos.json / playlists.json
+     with fetch(), most browsers block that over a plain file:// link.
+     Run it through a local server (e.g. `python3 -m http.server`) or
+     deploy it (Vercel etc.) rather than double-clicking the html file.
      ========================================================= */
-  const videos = [
-    {
-      title: "india got latent",
-      type: "mega",
-      url: "https://mega.nz/embed/blxDHIIC#xtl6jlJYJXoxunocRyR26GyNcI7iC5rwkqx0sBip_jQ",
-      duration: "57:14",
-      thumbnail: "https://i.ibb.co/JFQS7zJ8/x.jpg"
-    },
-    {
-      title: "test",
-      type: "youtube",
-      url: "https://www.youtube.com/watch?v=dQw4w9WgXc",
-      startTime: 30,
-      duration: "05:24",
-      thumbnail: ""
-    },
-    {
-      title: "test 2",
-      type: "dailymotion",
-      url: "https://www.dailymotion.com/video/x7tgd2v",
-      startTime: 15,
-      duration: "22:11",
-      thumbnail: ""
-    }
-  ];
+
+  let videos = [];
+  let playlists = [];
+  let currentPlaylistIndex = null; // null = "All Videos"
+  let lastQuery = '';
 
   const gridEl = document.getElementById('videoGrid');
+  const gridTitleEl = document.getElementById('gridTitle');
+  const tabsEl = document.getElementById('tabs');
   const playerSection = document.getElementById('playerSection');
   const playerFrame = document.getElementById('playerFrame');
   const npTitle = document.getElementById('npTitle');
   const npMeta = document.getElementById('npMeta');
+
+  async function loadData(){
+    try{
+      const [vRes, pRes] = await Promise.all([
+        fetch('videos.json'),
+        fetch('playlists.json')
+      ]);
+      videos = await vRes.json();
+      playlists = await pRes.json();
+      renderTabs();
+      render(currentList());
+    }catch(err){
+      gridEl.innerHTML = `<div class="load-error">
+        Could not load videos.json / playlists.json.<br>
+        Make sure both files are in the same folder as this page, and
+        that you're viewing it through a local server or a deployed
+        URL (not a plain double-clicked file).
+      </div>`;
+    }
+  }
+
+  function renderTabs(){
+    tabsEl.innerHTML = '';
+    const allTab = document.createElement('div');
+    allTab.className = 'tab' + (currentPlaylistIndex === null ? ' active' : '');
+    allTab.textContent = 'All Videos';
+    allTab.onclick = () => { currentPlaylistIndex = null; renderTabs(); render(currentList()); };
+    tabsEl.appendChild(allTab);
+
+    playlists.forEach((pl, i) => {
+      const tab = document.createElement('div');
+      tab.className = 'tab' + (currentPlaylistIndex === i ? ' active' : '');
+      tab.textContent = pl.name;
+      tab.onclick = () => { currentPlaylistIndex = i; renderTabs(); render(currentList()); };
+      tabsEl.appendChild(tab);
+    });
+  }
+
+  function currentList(){
+    let list;
+    if(currentPlaylistIndex === null){
+      list = videos;
+      gridTitleEl.textContent = 'Videos';
+    }else{
+      const pl = playlists[currentPlaylistIndex];
+      list = pl.videoIds.map(id => videos.find(v => v.id === id)).filter(Boolean);
+      gridTitleEl.textContent = pl.name;
+    }
+    if(lastQuery){
+      list = list.filter(v => v.title.toLowerCase().includes(lastQuery));
+    }
+    return list;
+  }
 
   function extractYouTubeId(url){
     const patterns = [
@@ -365,10 +399,7 @@
       /youtube\.com\/embed\/([^?&/]+)/,
       /youtube\.com\/shorts\/([^?&/]+)/
     ];
-    for(const p of patterns){
-      const m = url.match(p);
-      if(m) return m[1];
-    }
+    for(const p of patterns){ const m = url.match(p); if(m) return m[1]; }
     return null;
   }
 
@@ -378,10 +409,7 @@
       /dailymotion\.com\/embed\/video\/([^_?&/]+)/,
       /dai\.ly\/([^_?&/]+)/
     ];
-    for(const p of patterns){
-      const m = url.match(p);
-      if(m) return m[1];
-    }
+    for(const p of patterns){ const m = url.match(p); if(m) return m[1]; }
     return null;
   }
 
@@ -398,21 +426,19 @@
       if(v.startTime) src += `&start=${v.startTime}`;
       return src;
     }
-    // mega — used as-is, no start-time support
-    return v.url;
+    return v.url; // mega — used as-is
   }
 
   function render(list){
     gridEl.innerHTML = '';
-    if(list.length === 0){
-      gridEl.innerHTML = '<div class="empty-state">No videos match your search.</div>';
+    if(!list || list.length === 0){
+      gridEl.innerHTML = '<div class="empty-state">No videos here.</div>';
       return;
     }
     list.forEach((v) => {
-      const realIndex = videos.indexOf(v);
       const card = document.createElement('div');
       card.className = 'video-card';
-      card.onclick = () => playVideo(realIndex);
+      card.onclick = () => playVideo(v.id);
 
       const thumbContent = v.thumbnail
         ? `<img src="${v.thumbnail}" alt="${v.title}" onerror="this.outerHTML='&#9654;';">`
@@ -433,8 +459,9 @@
     });
   }
 
-  function playVideo(index){
-    const v = videos[index];
+  function playVideo(id){
+    const v = videos.find(x => x.id === id);
+    if(!v) return;
     const src = buildEmbedSrc(v);
     playerFrame.innerHTML = `<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
     npTitle.textContent = v.title;
@@ -449,26 +476,19 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  let lastQuery = '';
-  function currentFiltered(){
-    if(!lastQuery) return videos;
-    return videos.filter(v => v.title.toLowerCase().includes(lastQuery));
-  }
-
   function runSearch(){
     lastQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-    render(currentFiltered());
+    render(currentList());
   }
-
   document.getElementById('searchInput').addEventListener('keydown', (e) => {
     if(e.key === 'Enter') runSearch();
   });
   document.getElementById('searchInput').addEventListener('input', (e) => {
     lastQuery = e.target.value.trim().toLowerCase();
-    render(currentFiltered());
+    render(currentList());
   });
 
-  render(videos);
+  loadData();
 </script>
 
 </body>
