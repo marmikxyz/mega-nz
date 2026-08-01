@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marmik Player — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0b0d;
+    --panel: #161619;
+    --panel-hover: #1f1f23;
+    --line: #26262b;
+    --text: #ececef;
+    --muted: #8a8a92;
+    --orange: #ff7a1a;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100vh;
+  }
+  header{
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 800;
+    font-size: 18px;
+  }
+  header span{ color: var(--orange); }
+  main{ max-width: 900px; margin: 0 auto; padding: 24px; }
+
+  /* Login screen */
+  #loginBox{
+    max-width: 360px;
+    margin: 60px auto 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  #loginBox h2{ margin: 0 0 16px; font-size: 16px; }
+  #loginBox input{
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  #loginBox button{
+    width: 100%;
+    background: var(--orange);
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    color: #0b0b0d;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  #loginError{ color: #ff5c5c; font-size: 13px; margin-top: 10px; display:none; }
+
+  /* Panel sections */
+  #panel{ display: none; }
+  .section{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .section h2{ margin: 0 0 16px; font-size: 15px; }
+  .form-row{ margin-bottom: 12px; }
+  .form-row label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .form-row input, .form-row select{
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+  }
+  .form-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .btn{
+    background: var(--orange);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    color: #0b0b0d;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn:hover{ background: #ff9847; }
+  .btn-secondary{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .btn-secondary:hover{ color: var(--text); border-color: var(--text); }
+  .btn-danger{
+    background: transparent;
+    border: 1px solid #7a2c2c;
+    color: #ff8a8a;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  .btn-danger:hover{ background: #7a2c2c; color: #fff; }
+
+  .list-item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .list-item:last-child{ border-bottom: none; }
+  .list-item .meta{ min-width: 0; }
+  .list-item .meta .t{ font-size: 14px; font-weight: 700; }
+  .list-item .meta .s{ font-size: 12px; color: var(--muted); }
+
+  .playlist-block{ border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .playlist-block .pl-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+  .playlist-block .pl-header .t{ font-weight: 800; font-size: 14px; }
+  .checkbox-row{ display:flex; align-items:center; gap: 8px; padding: 6px 0; font-size: 13px; }
+  .checkbox-row label{ flex: 1; }
+  .save-row{ margin-top: 10px; display:flex; gap: 8px; }
+
+  .status-msg{ font-size: 13px; margin-top: 8px; }
+  .status-msg.ok{ color: #7fd88a; }
+  .status-msg.err{ color: #ff8a8a; }
+
+  .empty{ color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>Marmik Player <span>Admin</span></header>
+
+<main>
+  <div id="loginBox">
+    <h2>Enter admin password</h2>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="loginError">Incorrect password.</div>
+  </div>
+
+  <div id="panel">
+
+    <div class="section">
+      <h2>Add Video</h2>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Title</label>
+          <input type="text" id="v_title" placeholder="My Video">
+        </div>
+        <div class="form-row">
+          <label>Type</label>
+          <select id="v_type">
+            <option value="mega">Mega</option>
+            <option value="youtube">YouTube</option>
+            <option value="dailymotion">Dailymotion</option>
+          </select>
+        </div>
+        <div class="form-row" style="grid-column: 1 / -1;">
+          <label>URL (Mega: embed link · YouTube/Dailymotion: any normal link)</label>
+          <input type="text" id="v_url" placeholder="https://...">
+        </div>
+        <div class="form-row">
+          <label>Start time in seconds (YouTube/Dailymotion only, optional)</label>
+          <input type="number" id="v_startTime" placeholder="30">
+        </div>
+        <div class="form-row">
+          <label>Duration text (optional)</label>
+          <input type="text" id="v_duration" placeholder="12:34">
+        </div>
+        <div class="form-row" style="grid-column: 1 / -1;">
+          <label>Thumbnail URL (optional)</label>
+          <input type="text" id="v_thumbnail" placeholder="https://...">
+        </div>
+      </div>
+      <button class="btn" onclick="addVideo()">Add Video</button>
+      <div class="status-msg" id="videoStatus"></div>
+    </div>
+
+    <div class="section">
+      <h2>Existing Videos</h2>
+      <div id="videoList"></div>
+    </div>
+
+    <div class="section">
+      <h2>Create Playlist</h2>
+      <div class="form-row">
+        <label>Playlist name</label>
+        <input type="text" id="pl_name" placeholder="My Favorites">
+      </div>
+      <button class="btn" onclick="createPlaylist()">Create Playlist</button>
+      <div class="status-msg" id="playlistStatus"></div>
+    </div>
+
+    <div class="section">
+      <h2>Manage Playlists</h2>
+      <div id="playlistManager"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://your-api.onrender.com'; // <-- change this to your deployed API URL
+
+  let adminPassword = '';
+  let videos = [];
+  let playlists = [];
+
+  function authHeaders(){
+    return { 'Content-Type': 'application/json', 'x-admin-password': adminPassword };
+  }
+
+  async function login(){
+    const pw = document.getElementById('passwordInput').value;
+    try{
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      });
+      const data = await res.json();
+      if(data.ok){
+        adminPassword = pw;
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('panel').style.display = 'block';
+        loadAll();
+      }else{
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }catch(err){
+      document.getElementById('loginError').textContent = 'Could not reach the API. Check API_BASE.';
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
+  async function loadAll(){
+    const [vRes, pRes] = await Promise.all([
+      fetch(`${API_BASE}/api/videos`),
+      fetch(`${API_BASE}/api/playlists`)
+    ]);
+    videos = await vRes.json();
+    playlists = await pRes.json();
+    renderVideoList();
+    renderPlaylistManager();
+  }
+
+  function setStatus(elId, msg, ok){
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.className = 'status-msg ' + (ok ? 'ok' : 'err');
+  }
+
+  // ---------- VIDEOS ----------
+  async function addVideo(){
+    const title = document.getElementById('v_title').value.trim();
+    const type = document.getElementById('v_type').value;
+    const url = document.getElementById('v_url').value.trim();
+    const startTime = document.getElementById('v_startTime').value;
+    const duration = document.getElementById('v_duration').value.trim();
+    const thumbnail = document.getElementById('v_thumbnail').value.trim();
+
+    if(!title || !url){
+      setStatus('videoStatus', 'Title and URL are required.', false);
+      return;
+    }
+
+    try{
+      const res = await fetch(`${API_BASE}/api/videos`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          title, type, url,
+          startTime: startTime ? Number(startTime) : null,
+          duration, thumbnail
+        })
+      });
+      const data = await res.json();
+      if(data.ok){
+        setStatus('videoStatus', 'Video added.', true);
+        ['v_title','v_url','v_startTime','v_duration','v_thumbnail'].forEach(id => document.getElementById(id).value = '');
+        loadAll();
+      }else{
+        setStatus('videoStatus', data.error || 'Failed to add video.', false);
+      }
+    }catch(err){
+      setStatus('videoStatus', 'Network error adding video.', false);
+    }
+  }
+
+  function renderVideoList(){
+    const box = document.getElementById('videoList');
+    box.innerHTML = '';
+    if(videos.length === 0){
+      box.innerHTML = '<div class="empty">No videos yet.</div>';
+      return;
+    }
+    videos.forEach(v => {
+      const row = document.createElement('div');
+      row.className = 'list-item';
+      row.innerHTML = `
+        <div class="meta">
+          <div class="t">${v.title}</div>
+          <div class="s">${v.type} · ${v.duration || 'no duration set'}</div>
+        </div>
+        <button class="btn-danger" onclick="deleteVideo('${v.id}')">Delete</button>
+      `;
+      box.appendChild(row);
+    });
+  }
+
+  async function deleteVideo(id){
+    if(!confirm('Delete this video? This also removes it from any playlists.')) return;
+    await fetch(`${API_BASE}/api/videos/${id}`, { method: 'DELETE', headers: authHeaders() });
+    loadAll();
+  }
+
+  // ---------- PLAYLISTS ----------
+  async function createPlaylist(){
+    const name = document.getElementById('pl_name').value.trim();
+    if(!name){
+      setStatus('playlistStatus', 'Enter a playlist name.', false);
+      return;
+    }
+    const res = await fetch(`${API_BASE}/api/playlists`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ name, videoIds: [] })
+    });
+    const data = await res.json();
+    if(data.ok){
+      setStatus('playlistStatus', 'Playlist created.', true);
+      document.getElementById('pl_name').value = '';
+      loadAll();
+    }else{
+      setStatus('playlistStatus', data.error || 'Failed to create playlist.', false);
+    }
+  }
+
+  function renderPlaylistManager(){
+    const box = document.getElementById('playlistManager');
+    box.innerHTML = '';
+    if(playlists.length === 0){
+      box.innerHTML = '<div class="empty">No playlists yet.</div>';
+      return;
+    }
+    playlists.forEach(pl => {
+      const block = document.createElement('div');
+      block.className = 'playlist-block';
+
+      const checkboxes = videos.map(v => {
+        const checked = pl.videoIds.includes(v.id);
+        return `
+          <div class="checkbox-row">
+            <input type="checkbox" id="chk_${pl.id}_${v.id}" ${checked ? 'checked' : ''}>
+            <label for="chk_${pl.id}_${v.id}">${v.title}</label>
+          </div>
+        `;
+      }).join('') || '<div class="empty">Add some videos first.</div>';
+
+      block.innerHTML = `
+        <div class="pl-header">
+          <div class="t">${pl.name}</div>
+          <button class="btn-danger" onclick="deletePlaylist('${pl.id}')">Delete Playlist</button>
+        </div>
+        ${checkboxes}
+        <div class="save-row">
+          <button class="btn" onclick="savePlaylist('${pl.id}', '${pl.name.replace(/'/g, "\\'")}')">Save Changes</button>
+        </div>
+      `;
+      box.appendChild(block);
+    });
+  }
+
+  async function savePlaylist(id, name){
+    const videoIds = videos
+      .filter(v => document.getElementById(`chk_${id}_${v.id}`)?.checked)
+      .map(v => v.id);
+
+    const res = await fetch(`${API_BASE}/api/playlists/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ name, videoIds })
+    });
+    const data = await res.json();
+    if(data.ok){
+      loadAll();
+    }else{
+      alert(data.error || 'Failed to save playlist.');
+    }
+  }
+
+  async function deletePlaylist(id){
+    if(!confirm('Delete this playlist? (Videos themselves are not deleted.)')) return;
+    await fetch(`${API_BASE}/api/playlists/${id}`, { method: 'DELETE', headers: authHeaders() });
+    loadAll();
+  }
+</script>
+
+</body>
+</html>
